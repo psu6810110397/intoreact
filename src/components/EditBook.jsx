@@ -1,117 +1,72 @@
-import { Form, Modal, Select, Input, InputNumber, Image, Button, Space, message } from "antd" 
-import { useEffect, useRef, useState } from "react" 
+import { Form, Modal, Select, Input, InputNumber, Button, Space, message } from "antd" 
+import { useEffect, useState } from "react" 
 import { ThunderboltOutlined } from '@ant-design/icons'; 
 import axios from 'axios'; 
 
-
-const URL_GEMINI = "http://localhost:3000/api/gemini/summarize"; 
-
-export default function EditBook(props) {
-    const formRef = useRef(null)
+export default function EditBook({ isOpen, book, categories, onCancel, onSave }) {
+    const [form] = Form.useForm();
     const [loadingAI, setLoadingAI] = useState(false); 
 
+    // เมื่อ Modal เปิดขึ้นมา ให้นำข้อมูล book ใส่เข้าไปใน Form
     useEffect(() => {
-        if(props.book && formRef.current) {
-            
-            formRef.current.setFieldsValue({
-                ...props.book,
-               
-                categoryId: props.book.category?.id || props.book.categoryId 
-            })
+        if (isOpen && book) {
+            form.setFieldsValue({
+                ...book,
+                categoryId: book.category?.id || book.categoryId 
+            });
         }
-    }, [props.book])
+    }, [isOpen, book, form]);
 
     const handleAIGenerate = async () => {
+        const currentValues = form.getFieldsValue();
+        if (!currentValues.title) return message.warning('กรุณากรอกชื่อหนังสือก่อน');
+        
         try {
             setLoadingAI(true);
-            const currentValues = formRef.current.getFieldsValue();
-            
-           
-            if (!currentValues.title && !currentValues.author) {
-                message.warning('กรุณากรอก Title และ Author ก่อนดึงข้อมูล AI');
-                return;
-            }
-
-           
-            const promptText = `Please provide a short, engaging description (max 3 sentences) for the book titled "${currentValues.title || 'Unknown Title'}" by "${currentValues.author || 'Unknown Author'}". Focus on its core plot and genre.`;
-            
-            const response = await axios.post(URL_GEMINI, {
+            const response = await axios.post("http://localhost:3000/api/gemini/summarize", {
                 title: currentValues.title,
                 author: currentValues.author,
-                prompt: promptText, 
+                prompt: `Summary of ${currentValues.title} in 2 sentences.`, 
             });
-            
-            const aiDescription = response.data.summary || response.data.description;
-            
-          
-            if (aiDescription) {
-                formRef.current.setFieldsValue({ description: aiDescription });
-                message.success('ดึงคำอธิบายจาก AI สำเร็จ!');
-            } else {
-                 message.warning('AI ตอบกลับมา แต่ไม่มีคำอธิบายที่ชัดเจน');
+            const desc = response.data.summary || response.data.description;
+            if (desc) {
+                form.setFieldsValue({ description: desc });
+                message.success('AI สร้างคำอธิบายสำเร็จ');
             }
-
         } catch (error) {
-            console.error('Error calling Gemini API:', error);
-            message.error('เรียก API Gemini ไม่สำเร็จ');
+            message.error('เรียก AI ไม่สำเร็จ');
         } finally {
             setLoadingAI(false);
         }
     };
     
     return(
-        
-        <Form ref={formRef} layout="vertical"> 
-            <Modal 
-                title="Edit Book" 
-                okText="Save" 
-                cancelText="Cancel"
-                open={props.open} 
-                onCancel={props.onCancel} 
-                onOk={() => {
-                    formRef.current.validateFields().then(values => {
-                        props.onSave({...props.book, ...values})
-                    }).catch(info => {
-                        console.log('Validate Failed:', info);
-                    });
-                }}
-            >
-                <Form.Item>
-                    <Image src={`http://localhost:3080/${props.book?.coverUrl}`} height={100} />
-                </Form.Item>
-                <Form.Item name="title" label="Title" rules={[{ required: true }]}>
-                    <Input/>
-                </Form.Item>
-                <Form.Item name="author" label="Author" rules={[{ required: true }]}>
-                    <Input/>
-                </Form.Item>
-                
-               
+        <Modal 
+            title="แก้ไขข้อมูลหนังสือ" 
+            open={isOpen} 
+            onCancel={onCancel} 
+            destroyOnClose
+            onOk={() => {
+                form.validateFields().then(values => onSave(values));
+            }}
+        >
+            <Form form={form} layout="vertical"> 
+                <Form.Item name="title" label="Title" rules={[{ required: true }]}><Input/></Form.Item>
+                <Form.Item name="author" label="Author" rules={[{ required: true }]}><Input/></Form.Item>
                 <Form.Item label="Description" name="description">
                     <Space direction="vertical" style={{ width: '100%' }}>
-                        <Button 
-                            icon={<ThunderboltOutlined />} 
-                            onClick={handleAIGenerate} 
-                            loading={loadingAI}
-                            style={{ width: '100%' }}
-                        >
-                            {loadingAI ? 'กำลังดึงข้อมูลจาก AI...' : 'ดึงคำอธิบายโดย AI (Gemini)'}
+                        <Button icon={<ThunderboltOutlined />} onClick={handleAIGenerate} loading={loadingAI} block>
+                            ใช้ AI ช่วยเขียนคำอธิบาย
                         </Button>
                         <Input.TextArea rows={4} />
                     </Space>
                 </Form.Item>
-                
-                <Form.Item name="price" label="Price" rules={[{ required: true }]}>
-                    <InputNumber min={0} style={{ width: '100%' }}/>
-                </Form.Item>
-                <Form.Item name="stock" label="Stock" rules={[{ required: true }]}>
-                    <InputNumber min={0} style={{ width: '100%' }}/>
-                </Form.Item>
+                <Form.Item name="price" label="Price" rules={[{ required: true }]}><InputNumber style={{ width: '100%' }}/></Form.Item>
+                <Form.Item name="stock" label="Stock" rules={[{ required: true }]}><InputNumber style={{ width: '100%' }}/></Form.Item>
                 <Form.Item name="categoryId" label="Category" rules={[{ required: true }]}>
-                    
-                    <Select allowClear style={{width:"150px"}} options={props.categories}/>
+                    <Select allowClear options={categories}/>
                 </Form.Item>
-            </Modal>
-        </Form>
+            </Form>
+        </Modal>
     )
 }

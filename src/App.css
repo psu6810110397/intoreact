@@ -1,46 +1,48 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* จัดให้ทุกอย่างอยู่กึ่งกลางหน้าจอสำหรับหน้า Login */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.login-card {
+  width: 400px;
+  padding: 40px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* แก้ไข Layout หลักของ BookScreen */
+.main-layout {
+  min-height: 100vh;
+  background-color: #f0f2f5 !important;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 50px;
+  background: #001529 !important;
 }
 
-.card {
-  padding: 2em;
+.app-content {
+  padding: 40px 50px;
 }
 
-.read-the-docs {
-  color: #888;
+.content-card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 8px;
 }
 
 .red-row {
-  background-color: #ffe6e6;
+  background-color: #fff1f0 !important;
 }
