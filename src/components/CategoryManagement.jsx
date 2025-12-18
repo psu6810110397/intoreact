@@ -7,10 +7,10 @@ export default function CategoryManagement({ categories, onCancel, onAdd, onEdit
     const [editingKey, setEditingKey] = useState('');
     const [adding, setAdding] = useState(false);
     
-    // แปลงข้อมูล Categories สำหรับ Table
+    
     const categoryData = categories.map(cat => ({
-        key: cat.value, // value คือ category ID
-        name: cat.label, // label คือ category name
+        key: cat.value, 
+        name: cat.label, 
         id: cat.value,
     }));
 
@@ -21,7 +21,7 @@ export default function CategoryManagement({ categories, onCancel, onAdd, onEdit
             form.resetFields(); 
             setAdding(false);
         } catch (error) {
-            // Error handling ถูกจัดการใน BookScreen
+           
         }
     };
     
@@ -41,7 +41,7 @@ export default function CategoryManagement({ categories, onCancel, onAdd, onEdit
             await onDelete(id);
             message.success('ลบหมวดหมู่สำเร็จ');
         } catch (error) {
-             // Error handling ถูกจัดการใน BookScreen
+           
         }
     };
 
